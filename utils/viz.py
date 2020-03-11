@@ -7,6 +7,8 @@ Created on Fri Feb 28 10:10:48 2020
 
 import plotly
 import geopandas as gpd
+import pandas as pd
+from sklearn import preprocessing
 
 
 def hist_plot(series, title):
@@ -47,9 +49,9 @@ def hist_plot(series, title):
     return fig
 
 
-def map_city_count(city_value_counts_df, geojson_path):
+def map_city_count(city_value_counts_df, cx = 'longitude', cy = 'latitude', r = 'count_scaled'):
 
-    df = gpd.read_file(geojson_path)
+    df = gpd.read_file('../data/geojson/region_admin_poly.shp')
     
     layout = dict(
         hovermode = 'closest',
@@ -105,17 +107,17 @@ def map_city_count(city_value_counts_df, geojson_path):
         plot_data.append(county_outline)
         
 
-    x = city_value_counts_df['mean_x']
-    y = city_value_counts_df['mean_y']
+    cx = city_value_counts_df[cx]
+    cy = city_value_counts_df[cy]
     
     city_scatter = dict(
         type = 'scatter',
         showlegend = False,
-        x=x,
-        y=y,
+        x=cx,
+        y=cy,
         mode = 'markers',
         marker = dict(
-            size =city_value_counts_df['count_scaled']*100
+            size =city_value_counts_df[r]*100
             ),
         fillcolor = 'purple',
         opacity = 0.8
@@ -127,4 +129,17 @@ def map_city_count(city_value_counts_df, geojson_path):
     
     return(plotly.offline.iplot(fig, filename='county_text.html'))
 
+
+def city_postings(df, city_label_cols='city_name', longitude_cols = 'longitude',
+                  latitude_cols = 'latitude', scaler='MinMaxScaler'):
     
+    city_count = pd.DataFrame(df[city_label_cols].value_counts())
+
+    scaler = getattr(preprocessing, scaler)(feature_range=(0.1,0.9))
+    scaled_count = scaler.fit_transform(city_count.values.reshape(-1,1))
+
+    city_count['count_scaled'] = scaled_count
+    city_count['latitude'] = [df[df[city_label_cols]==city][latitude_cols].mean() for city in city_count.index]
+    city_count['longitude'] = [df[df[city_label_cols]==city][longitude_cols].mean() for city in city_count.index]
+
+    return(city_count.drop('Unavailable'))
