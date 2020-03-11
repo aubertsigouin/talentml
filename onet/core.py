@@ -11,17 +11,17 @@ class OnetDB():
     A helper to extract data from O*NET
     """
 
-    base_url = 'https://www.onetcenter.org/'
-
     def __init__(self):
-        self.directory = {
-            'technology_skills_competencies' : 'dl_files/frameworks/Technology_Skills_Competencies.xlsx'
+        self.links_directory = {
+            'abilities' : 'https://www.onetcenter.org/dl_files/database/db_24_2_excel/Abilities.xlsx',
+            'hot_technologies' : 'https://www.onetonline.org/search/hot_tech/table/Hot_Technologies.xls?fmt=xls'
+            
             }
         #print(self.full_url)
 
-    def call(self, f):
-        response = pd.read_excel(self.base_url+f)
-        return(response['Unnamed: 1'][2:])
+    def get(self, f):
+        df = pd.read_excel(self.links_directory[f])
+        return(df)
 
     # def get_data(self):
     #     self.call()
