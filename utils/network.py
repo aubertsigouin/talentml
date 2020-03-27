@@ -8,17 +8,22 @@ from collections import Counter
 import itertools
 import pandas as pd
 import nltk
-nltk.download('punkt')
+import re
+#nltk.download('punkt')
 
-def word_count(text, word_list):
+def tech_count(text, techs):
+    text = text.lower()
     counts = Counter()
-
+    
     uniques = set(nltk.word_tokenize(text))
     
-    for word in word_list:
-        if word in uniques:
-            counts[word] += text.count(word)
+    for tech in list(techs.keys()):
+        aliases = [techs[tech]['aliases'][idx].lower() for idx in range(len(techs[tech]['aliases']))]
 
+        for alias in aliases:
+            if alias in uniques:
+                counts[tech] += len(re.findall(r'\b' + re.escape(alias) + r'\b', text, re.I))
+                
     return(counts)
 
 def co_occurences(list_of_dict, kind='links'):
@@ -28,7 +33,7 @@ def co_occurences(list_of_dict, kind='links'):
     links = []
     
     for obs in range(len(list_of_dict)):
-        words = [k for k,v in list_of_dict[obs].items()]
+        words =     [k for k,v in list_of_dict[obs].items()]
         occurences = [v for k,v in list_of_dict[obs].items()]
         
         combinations = list(itertools.combinations(words, 2))

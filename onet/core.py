@@ -14,14 +14,19 @@ class OnetDB():
     def __init__(self):
         self.links_directory = {
             'abilities' : 'https://www.onetcenter.org/dl_files/database/db_24_2_excel/Abilities.xlsx',
-            'hot_technologies' : 'https://www.onetonline.org/search/hot_tech/table/Hot_Technologies.xls?fmt=xls'
+            'hot_technologies' : '../data/hot_technologies/Hot_Technologies_.xls'
             
             }
         #print(self.full_url)
 
-    def get(self, f):
-        df = pd.read_excel(self.links_directory[f])
-        return(df)
+    def build_hot_technologies(self):
+        df = pd.read_excel(self.links_directory['hot_technologies']).iloc[2:,:].reset_index(drop=True)
+        tech_dict = {}
+        clean_names = df['Hot Technologies']
+        for x in range(len(df)):
+            tech_dict[clean_names.iloc[x]] = {'aliases': list(set(df.iloc[x].values))}
+
+        return(tech_dict)
 
     # def get_data(self):
     #     self.call()
